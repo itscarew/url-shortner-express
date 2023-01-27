@@ -1,14 +1,15 @@
 import express from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
+import redis from "redis";
 import urlRoutes from "./routes/index.js";
 
-const app = express();
+const port = 5000;
+const redisPort = 6379;
 
+const app = express();
 const db = `mongodb://127.0.0.1:27017/urlDB`;
 mongoose.connect(db);
-
-const port = process.env.PORT || 5000;
 
 app.use(bodyParser.json());
 app.use(
@@ -17,6 +18,12 @@ app.use(
   })
 );
 app.use("/shortenUrl", urlRoutes);
+
+export const client = redis.createClient(redisPort);
+
+client.connect();
+// client.on("connected", () => console.log("Redis connected"));
+// client.on("error", (err) => console.log("Redis Client Error", err));
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);
