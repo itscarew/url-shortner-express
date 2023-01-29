@@ -1,7 +1,8 @@
 import cryptoRandomString from "crypto-random-string";
 import { client } from "../index.js";
-export const urlShortener = () => {
-  const shortURL = cryptoRandomString({ length: 3, type: "url-safe" });
+export const urlShortener = (length) => {
+  const characters = "abcdefghijklmnopqrstuvwxyz";
+  const shortURL = cryptoRandomString({ length, characters });
   return shortURL;
 };
 

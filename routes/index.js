@@ -16,7 +16,7 @@ router.get(`/`, async (req, res) => {
         data: JSON.parse(cachedUrls),
       });
     } else {
-      const allUrls = await Url.find();
+      const allUrls = await Url.find().populate("shortUrl");
       await client.setEx("urlData", 3600, JSON.stringify(allUrls));
       res.json({
         message: "All Url Found",
@@ -41,7 +41,6 @@ router.post(`/`, cachePostUrl, async (req, res) => {
         data: findUrl,
       });
     } else {
-      const shortUrl = urlShortener();
       const urlIds = [];
       const findShortenUrl = await Url.find();
       if (findShortenUrl) {
@@ -50,13 +49,40 @@ router.post(`/`, cachePostUrl, async (req, res) => {
         });
 
         const findUrlBank = await UrlBank.findOne({ _id: { $nin: urlIds } });
-        newUrl.originalUrl = req.body.originalUrl;
-        newUrl.shortUrl = findUrlBank._id;
+        if (!findUrlBank) {
+          const shortUrl = urlShortener(3);
+          let newUrlBank = new UrlBank();
+          newUrlBank.shortUrl = shortUrl;
 
-        const savedUrl = await newUrl.save();
-        const a = await savedUrl.populate("shortUrl");
-        await client.setEx(req.body.originalUrl, 3600, JSON.stringify(a));
-        res.json({ message: "Url have been added", data: a });
+          const savedUrlBank = await newUrlBank.save();
+
+          newUrl.originalUrl = req.body.originalUrl;
+          newUrl.shortUrl = savedUrlBank._id;
+
+          const savedUrl = await newUrl.save();
+          const populatedSavedUrl = await savedUrl.populate("shortUrl");
+          await client.setEx(
+            req.body.originalUrl,
+            3600,
+            JSON.stringify(populatedSavedUrl)
+          );
+          res.json({
+            message: "Url and Url Bank have been added",
+            data: populatedSavedUrl,
+          });
+        } else {
+          newUrl.originalUrl = req.body.originalUrl;
+          newUrl.shortUrl = findUrlBank._id;
+
+          const savedUrl = await newUrl.save();
+          const populatedSavedUrl = await savedUrl.populate("shortUrl");
+          await client.setEx(
+            req.body.originalUrl,
+            3600,
+            JSON.stringify(populatedSavedUrl)
+          );
+          res.json({ message: "Url have been added", data: populatedSavedUrl });
+        }
       }
     }
   } catch (error) {
@@ -66,8 +92,11 @@ router.post(`/`, cachePostUrl, async (req, res) => {
 
 router.get(`/:shortUrl`, cache, async (req, res) => {
   try {
-    const oneUrl = await Url.findOne({
+    const findUrlBank = await UrlBank.findOne({
       shortUrl: req.params.shortUrl,
+    });
+    const oneUrl = await Url.findOne({
+      shortUrl: findUrlBank._id,
     });
     await client.setEx(req.params.shortUrl, 3600, oneUrl.originalUrl);
     res.json({ message: "Url have been found", data: oneUrl.originalUrl });
@@ -77,18 +106,18 @@ router.get(`/:shortUrl`, cache, async (req, res) => {
 });
 
 //cron job every month
-cron.schedule("* * 30 * *", () => {
+cron.schedule("0 10 1 * *", () => {
   addShortUrls();
 });
 
 const addShortUrls = async () => {
   try {
     const urlToSave = [];
-    for (let i = 0; i < 5; i++) {
-      const shortUrl = urlShortener();
+    for (let i = 0; i < 50; i++) {
+      const shortUrl = urlShortener(3);
       urlToSave.push({ shortUrl: shortUrl });
     }
-    if (urlToSave.length === 5) {
+    if (urlToSave.length === 50) {
       await UrlBank.insertMany(urlToSave);
       console.log("added");
     }
