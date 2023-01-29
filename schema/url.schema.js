@@ -7,7 +7,7 @@ const UrlSchema = new Schema({
     type: String,
     required: [true, "Url is required"],
   },
-  shortnedUrl: String,
+  shortUrl: { type: Schema.Types.ObjectId, ref: "UrlBank" },
 });
 
 export default mongoose.model(`Url`, UrlSchema);

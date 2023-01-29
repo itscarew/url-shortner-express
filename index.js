@@ -22,8 +22,7 @@ app.use("/shortenUrl", urlRoutes);
 export const client = redis.createClient(redisPort);
 
 client.connect();
-// client.on("connected", () => console.log("Redis connected"));
-// client.on("error", (err) => console.log("Redis Client Error", err));
+client.on("connected", () => console.log("Redis connected"));
 
 app.listen(port, () => {
   console.log(`Listening on port ${port}`);

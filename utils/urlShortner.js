@@ -1,6 +1,6 @@
 import cryptoRandomString from "crypto-random-string";
 import { client } from "../index.js";
-export const urlShortener = (longURL = "") => {
+export const urlShortener = () => {
   const shortURL = cryptoRandomString({ length: 3, type: "url-safe" });
   return shortURL;
 };
@@ -8,8 +8,8 @@ export const urlShortener = (longURL = "") => {
 //Cache MiddleWare
 export const cache = async (req, res, next) => {
   try {
-    const shortenUrl = req.params.shortenUrl;
-    const cachedUrl = await client.get(shortenUrl);
+    const shortUrl = req.params.shortUrl;
+    const cachedUrl = await client.get(shortUrl);
     if (cachedUrl !== null) {
       res.json({ message: "Url have been found from redis", data: cachedUrl });
     } else {
