@@ -105,21 +105,26 @@ router.get(`/:shortUrl`, cache, async (req, res) => {
   }
 });
 
+router.post(`/urlBanks`, async (req, res) => {
+  await addShortUrls();
+  res.json({ message: "Url Banks added" });
+});
+
 //cron job every month
 cron.schedule("0 10 1 * *", () => {
   addShortUrls();
 });
 
+let length = 3;
 const addShortUrls = async () => {
   try {
     const urlToSave = [];
-    for (let i = 0; i < 50; i++) {
-      const shortUrl = urlShortener(3);
+    for (let i = 0; i < 20; i++) {
+      const shortUrl = urlShortener(length);
       urlToSave.push({ shortUrl: shortUrl });
     }
-    if (urlToSave.length === 50) {
+    if (urlToSave.length === 20) {
       await UrlBank.insertMany(urlToSave);
-      console.log("added");
     }
   } catch (error) {
     res.send(error);
