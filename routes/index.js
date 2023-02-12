@@ -152,11 +152,11 @@ const addShortUrls = async () => {
   const length = await UrlLength.findOne();
   try {
     const urlToSave = [];
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 20; i++) {
       const shortUrl = urlShortener(length.length);
       urlToSave.push({ shortUrl: shortUrl });
     }
-    if (urlToSave.length === 30) {
+    if (urlToSave.length === 20) {
       await UrlBank.insertMany(urlToSave);
     }
   } catch (error) {

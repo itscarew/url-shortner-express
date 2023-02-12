@@ -14,7 +14,7 @@ UrlBankSchema.post("insertMany", async function (doc, next) {
     .model(`UrlBank`, UrlBankSchema)
     .countDocuments();
 
-  if (UrlBankCount + 1 >= PaC(length.length)) {
+  if (UrlBankCount + 20 >= PaC(length.length)) {
     length.length = length.length + 1;
     await length.save();
     next();

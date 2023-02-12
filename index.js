@@ -11,7 +11,7 @@ const port = 5000;
 const redisPort = 6379;
 
 const app = express();
-const db = `mongodb://127.0.0.1:27017/urlDB`;
+const db = `mongodb+srv://itscarew:${process.env.DB_PASSWORD}@short-url-cluster.onxqicg.mongodb.net/?retryWrites=true&w=majority`;
 mongoose.connect(db, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
