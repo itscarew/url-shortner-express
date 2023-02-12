@@ -3,7 +3,8 @@ import { cache, cachePostUrl, urlShortener } from "../utils/urlShortner.js";
 import Url from "../schema/url.schema.js";
 import { client } from "../index.js";
 import cron from "node-cron";
-import UrlBank from "../schema/urlBank.js";
+import UrlBank from "../schema/urlBank.schema.js";
+import UrlLength from "../schema/urlLength.schema.js";
 
 const router = express.Router();
 
@@ -29,11 +30,13 @@ router.get(`/`, async (req, res) => {
 });
 
 router.post(`/`, cachePostUrl, async (req, res) => {
+  const length = await UrlLength.findOne();
   try {
     let newUrl = new Url();
     const findUrl = await Url.findOne({
       originalUrl: req.body.originalUrl,
     }).populate("shortUrl");
+
     if (findUrl) {
       await client.setEx(req.body.originalUrl, 3600, JSON.stringify(findUrl));
       res.json({
@@ -50,7 +53,7 @@ router.post(`/`, cachePostUrl, async (req, res) => {
 
         const findUrlBank = await UrlBank.findOne({ _id: { $nin: urlIds } });
         if (!findUrlBank) {
-          const shortUrl = urlShortener(3);
+          const shortUrl = urlShortener(length.length);
           let newUrlBank = new UrlBank();
           newUrlBank.shortUrl = shortUrl;
 
@@ -106,8 +109,38 @@ router.get(`/:shortUrl`, cache, async (req, res) => {
 });
 
 router.post(`/urlBanks`, async (req, res) => {
-  await addShortUrls();
-  res.json({ message: "Url Banks added" });
+  try {
+    await addShortUrls();
+    res.json({ message: "Url Banks added" });
+  } catch (error) {
+    res.send(error);
+  }
+});
+
+router.post(`/urlLength`, async (req, res) => {
+  let newUrlLength = new UrlLength();
+  newUrlLength.length = req.body.length;
+
+  await newUrlLength.save();
+  res.json({ message: "Url Lenght Added added" });
+});
+
+router.delete(`/`, async (req, res) => {
+  try {
+    await Url.deleteMany({});
+    res.json({ message: "Url's Deleted" });
+  } catch (error) {
+    res.send(error);
+  }
+});
+
+router.delete(`/urlBanks`, async (req, res) => {
+  try {
+    await UrlBank.deleteMany({});
+    res.json({ message: "Url Banks Deleted" });
+  } catch (error) {
+    res.send(error);
+  }
 });
 
 //cron job every month
@@ -115,19 +148,19 @@ cron.schedule("0 10 1 * *", () => {
   addShortUrls();
 });
 
-let length = 3;
 const addShortUrls = async () => {
+  const length = await UrlLength.findOne();
   try {
     const urlToSave = [];
-    for (let i = 0; i < 20; i++) {
-      const shortUrl = urlShortener(length);
+    for (let i = 0; i < 5; i++) {
+      const shortUrl = urlShortener(length.length);
       urlToSave.push({ shortUrl: shortUrl });
     }
-    if (urlToSave.length === 20) {
+    if (urlToSave.length === 30) {
       await UrlBank.insertMany(urlToSave);
     }
   } catch (error) {
-    res.send(error);
+    throw error;
   }
 };
 

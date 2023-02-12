@@ -1,5 +1,7 @@
 import cryptoRandomString from "crypto-random-string";
 import { client } from "../index.js";
+import UrlLengthSchema from "../schema/urlLength.schema.js";
+
 export const urlShortener = (length) => {
   const characters = "abcdefghijklmnopqrstuvwxyz";
   const shortURL = cryptoRandomString({ length, characters });
