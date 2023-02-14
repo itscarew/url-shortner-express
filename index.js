@@ -8,7 +8,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const port = process.env.PORT || 5000;
-const redisPort = 6379 || 7090;
+const redisPort = 7090 || 6379;
 
 const app = express();
 const db = `mongodb+srv://itscarew:${process.env.DB_PASSWORD}@short-url-cluster.onxqicg.mongodb.net/?retryWrites=true&w=majority`;
