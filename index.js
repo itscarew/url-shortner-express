@@ -7,7 +7,7 @@ import urlRoutes from "./routes/index.js";
 import dotenv from "dotenv";
 dotenv.config();
 
-const port = 5000;
+const port = process.env.PORT || 5000;
 const redisPort = 6379;
 
 const app = express();
