@@ -143,7 +143,6 @@ router.delete(`/urlBanks`, async (req, res) => {
   }
 });
 
-//cron job every month
 cron.schedule("0 10 1 * *", () => {
   addShortUrls();
 });
